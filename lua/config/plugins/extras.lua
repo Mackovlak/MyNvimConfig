@@ -31,7 +31,6 @@ return {
     dependencies = {
       "nvim-lua/plenary.nvim",
       "nvim-treesitter/nvim-treesitter",
-      "nvim-neotest/nvim-co-test",        -- optional: co-locate tests
       "nvim-neotest/neotest-python",
       "nvim-neotest/neotest-jest",
       "marilari88/neotest-vitest",
@@ -84,7 +83,11 @@ return {
   {
     "iamcco/markdown-preview.nvim",
     cmd   = { "MarkdownPreview", "MarkdownPreviewStop" },
-    build = "cd app && npm install",
+    -- Use the pre-built release instead of building from source.
+    -- This avoids the yarn.lock dirty-tree problem entirely.
+    build = function()
+      vim.fn["mkdp#util#install"]()
+    end,
     init  = function()
       vim.g.mkdp_filetypes = { "markdown" }
     end,

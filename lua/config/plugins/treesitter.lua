@@ -4,10 +4,13 @@
 return {
   {
     "nvim-treesitter/nvim-treesitter",
-    build       = ":TSUpdate",
-    event       = { "BufReadPost", "BufNewFile" },
+    build        = ":TSUpdate",
+    -- Load early (not lazily on event) so other plugins that depend on
+    -- treesitter (LSP folds, autotag, context commentstring) can find it.
+    lazy         = false,
+    priority     = 900,
     dependencies = {
-      "nvim-treesitter/nvim-treesitter-textobjects",  -- select/move by function, class, etc.
+      "nvim-treesitter/nvim-treesitter-textobjects",
     },
     config = function()
       require("nvim-treesitter.configs").setup({
