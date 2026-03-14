@@ -1,0 +1,10 @@
+# Machine-local — never commit
+lazy-lock.json
+spell/
+undodir/
+*.swp
+*.swo
+.DS_Store
+
+# Auto-session stores here — machine-local
+# (sessions/ is in stdpath("data"), not in the config dir, so already excluded)
