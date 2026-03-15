@@ -31,7 +31,13 @@ return {
       { "j-hui/fidget.nvim",
         opts = {
           notification = {
-            window = { avoid = { "NvimTree" } },  -- suppress implicit integration warning
+            window = {
+              -- Suppress "nvim-tree.lua integration implicitly enabled" warning
+              avoid_ftypes = { "NvimTree", "neo-tree" },
+            },
+          },
+          integration = {
+            ["nvim-tree"] = { enable = false },  -- opt out of auto integration
           },
         },
       },

@@ -25,6 +25,10 @@ if not vim.loop.fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
+-- Add nvim site dir to rtp so treesitter parsers installed there are found.
+-- This fixes the healthcheck "install directory not in runtimepath" warning.
+vim.opt.rtp:prepend(vim.fn.stdpath("data") .. "/site")
+
 require("config.options")
 require("config.keymaps")
 require("config.autocmds")
