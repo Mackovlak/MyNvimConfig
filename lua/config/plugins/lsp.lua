@@ -28,7 +28,13 @@ return {
       "roobert/tailwindcss-colorizer-cmp.nvim",
 
       -- Fancy LSP UI: hover docs, signature help
-      { "j-hui/fidget.nvim",  opts = {} },        -- LSP progress indicator
+      { "j-hui/fidget.nvim",
+        opts = {
+          notification = {
+            window = { avoid = { "NvimTree" } },  -- suppress implicit integration warning
+          },
+        },
+      },
       { "folke/neodev.nvim",  opts = {} },         -- Neovim Lua dev environment
     },
 

@@ -155,7 +155,7 @@ return {
     event = "VeryLazy",
     opts = {
       plugins = { spelling = true },
-      window  = { border = "rounded" },
+      win     = { border = "rounded" },   -- 'window' was renamed to 'win'
     },
     config = function(_, opts)
       local wk = require("which-key")

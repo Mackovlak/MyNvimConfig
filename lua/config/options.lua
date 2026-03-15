@@ -63,20 +63,40 @@ o.foldenable     = true
 o.foldcolumn     = "1"
 o.fillchars      = "fold: ,foldopen:󰁂,foldclose:󰁅,foldsep: ,eob: "
 
--- ── Clipboard: OSC52 — works over SSH to your local clipboard ─────────────────
--- Works in: WezTerm, iTerm2, Kitty, Windows Terminal, tmux (set-clipboard on)
-opt.clipboard = "unnamedplus"
+-- ── Clipboard ─────────────────────────────────────────────────────────────────
+-- OSC52 COPY  = yank in Neovim → lands in your LOCAL machine clipboard.
+--              Works over SSH with no extra tools (WezTerm, iTerm2, Kitty,
+--              Windows Terminal, tmux with set-clipboard on).
+--
+-- OSC52 PASTE READ hangs on SSH: the terminal is supposed to respond with
+-- the clipboard contents but most SSH setups never send that response, so
+-- Neovim waits the full timeout (~60s). Fix: fast unnamed-register fallback.
+--
+-- Workflow:
+--   y (yank)   → OSC52 write → instantly in your local clipboard
+--   p (paste)  → unnamed register → instant, no hang
+--   Paste FROM local machine → terminal paste key (Ctrl+Shift+V / Cmd+V)
 vim.g.clipboard = {
-  name  = "OSC52",
-  copy  = {
+  name = "OSC52-copy-only",
+  copy = {
     ["+"] = require("vim.ui.clipboard.osc52").copy("+"),
     ["*"] = require("vim.ui.clipboard.osc52").copy("*"),
   },
   paste = {
-    ["+"] = require("vim.ui.clipboard.osc52").paste("+"),
-    ["*"] = require("vim.ui.clipboard.osc52").paste("*"),
+    -- Skip OSC52 read (hangs on SSH). Return unnamed register content instead.
+    ["+"] = function()
+      local reg     = vim.fn.getreg('"')
+      local regtype = vim.fn.getregtype('"')
+      return { vim.split(reg, "\n"), regtype }
+    end,
+    ["*"] = function()
+      local reg     = vim.fn.getreg('"')
+      local regtype = vim.fn.getregtype('"')
+      return { vim.split(reg, "\n"), regtype }
+    end,
   },
 }
+opt.clipboard = "unnamedplus"
 
 -- ── Mouse ─────────────────────────────────────────────────────────────────────
 opt.mouse = "a"

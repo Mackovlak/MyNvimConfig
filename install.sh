@@ -80,6 +80,15 @@ if [[ $SKIP_SYSTEM -eq 0 ]]; then
 
   # prettierd + stylua via npm/cargo
   npm install -g prettierd prettier 2>/dev/null || warn "prettierd install failed (non-fatal)"
+  npm install -g neovim 2>/dev/null || warn "neovim npm package install failed (non-fatal)"
+
+  # Deno (required by peek.nvim markdown preview)
+  if ! command -v deno &>/dev/null; then
+    info "Installing Deno..."
+    curl -fsSL https://deno.land/install.sh | DENO_INSTALL=/usr/local sh 2>/dev/null       || warn "Deno install failed — peek.nvim markdown preview won't work"
+  else
+    ok "Deno already installed: $(deno --version | head -1)"
+  fi
 
   # fd is installed as fdfind on Ubuntu — symlink it
   if command -v fdfind &>/dev/null && ! command -v fd &>/dev/null; then

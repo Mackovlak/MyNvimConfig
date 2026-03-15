@@ -20,9 +20,16 @@ require("config.options")
 require("config.keymaps")
 require("config.autocmds")
 
+-- sessionoptions needed by auto-session for full restore
+vim.o.sessionoptions = "blank,buffers,curdir,folds,help,tabpages,winsize,winpos,terminal,localoptions"
+
 require("lazy").setup("config.plugins", {
   -- Auto-discovers every file in lua/config/plugins/
   change_detection = { notify = false },
+  rocks = {
+    enabled    = false,   -- disable luarocks/hererocks (avoids the luarocks warning)
+    hererocks  = false,
+  },
   ui = {
     border = "rounded",
     icons  = {

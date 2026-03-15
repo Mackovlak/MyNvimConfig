@@ -9,7 +9,7 @@ autocmd("TextYankPost", {
   group   = augroup("YankHighlight", { clear = true }),
   pattern = "*",
   callback = function()
-    vim.highlight.on_yank({ higroup = "IncSearch", timeout = 150 })
+    vim.hl.on_yank({ higroup = "IncSearch", timeout = 150 })
   end,
 })
 

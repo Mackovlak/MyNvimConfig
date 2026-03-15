@@ -8,12 +8,12 @@ return {
     "rmagatti/auto-session",
     lazy  = false,    -- must load early so it can restore
     opts  = {
-      log_level              = "error",
-      auto_save_enabled      = true,
-      auto_restore_enabled   = true,
-      -- Sessions stored in ~/.local/share/nvim/sessions/  (NOT in git)
-      auto_session_root_dir  = vim.fn.stdpath("data") .. "/sessions/",
-      bypass_session_save_file_types = {
+      -- Updated key names (auto-session v2 API)
+      log_level          = "error",
+      auto_save          = true,
+      auto_restore       = true,
+      root_dir           = vim.fn.stdpath("data") .. "/sessions/",
+      bypass_save_filetypes = {
         "NvimTree", "neo-tree", "dashboard", "alpha", "gitcommit",
       },
     },
@@ -80,21 +80,25 @@ return {
   { "nvim-tree/nvim-web-devicons", lazy = true },
 
   -- ── Markdown preview ─────────────────────────────────────────────────────────
+  -- Using peek.nvim instead of markdown-preview.nvim to avoid the yarn.lock
+  -- dirty-tree issue. peek.nvim uses deno (no npm/yarn) and is faster.
+  -- Requires: deno (installed by install.sh)
   {
-    "iamcco/markdown-preview.nvim",
-    cmd   = { "MarkdownPreview", "MarkdownPreviewStop" },
-    -- Use the pre-built release instead of building from source.
-    -- This avoids the yarn.lock dirty-tree problem entirely.
-    build = function()
-      vim.fn["mkdp#util#install"]()
-    end,
-    init  = function()
-      vim.g.mkdp_filetypes = { "markdown" }
-    end,
-    ft    = { "markdown" },
+    "toppair/peek.nvim",
+    build = "deno task --quiet build:fast",
     keys  = {
-      { "<leader>mp", "<cmd>MarkdownPreview<CR>",     desc = "Markdown preview" },
-      { "<leader>ms", "<cmd>MarkdownPreviewStop<CR>", desc = "Stop preview" },
+      { "<leader>mp", function() require("peek").open() end,  desc = "Markdown preview" },
+      { "<leader>ms", function() require("peek").close() end, desc = "Stop preview" },
+    },
+    ft   = { "markdown" },
+    opts = {
+      auto_load   = false,
+      close_on_bdelete = true,
+      syntax      = true,
+      theme       = "dark",
+      update_on_change = true,
+      app         = "browser",
+      filetype    = { "markdown" },
     },
   },
 
