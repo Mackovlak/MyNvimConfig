@@ -4,17 +4,17 @@
 vim.g.mapleader      = " "
 vim.g.maplocalleader = " "
 
--- Silence provider warnings (we use mason, not legacy providers)
+-- Silence unused provider warnings
 vim.g.loaded_perl_provider    = 0
 vim.g.loaded_ruby_provider    = 0
 vim.g.loaded_python3_provider = 0
 vim.g.loaded_node_provider    = 0
 
--- auto-session: localoptions preserves filetype+highlighting on restore
+-- Required by auto-session for full filetype/highlight restore
 vim.o.sessionoptions =
   "blank,buffers,curdir,folds,help,tabpages,winsize,winpos,terminal,localoptions"
 
--- Bootstrap lazy.nvim
+-- ── Bootstrap lazy.nvim ───────────────────────────────────────────────────────
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.loop.fs_stat(lazypath) then
   vim.fn.system({
@@ -25,8 +25,9 @@ if not vim.loop.fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
--- Add nvim site dir to rtp so treesitter parsers installed there are found.
--- This fixes the healthcheck "install directory not in runtimepath" warning.
+-- Add the nvim site dir to rtp BEFORE lazy runs.
+-- nvim-treesitter installs parsers to stdpath("data")/site/
+-- and this dir must be in rtp for :checkhealth to pass.
 vim.opt.rtp:prepend(vim.fn.stdpath("data") .. "/site")
 
 require("config.options")
@@ -36,7 +37,7 @@ require("config.autocmds")
 require("lazy").setup("config.plugins", {
   change_detection = { notify = false },
   rocks = {
-    enabled   = false,  -- silence luarocks/hererocks error
+    enabled   = false,
     hererocks = false,
   },
   ui = { border = "rounded" },
