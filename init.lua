@@ -1,15 +1,16 @@
 -- ============================================================
---  init.lua — entry point
+--  init.lua
 -- ============================================================
 vim.g.mapleader      = " "
 vim.g.maplocalleader = " "
 
--- Disable unused providers (silences healthcheck warnings)
-vim.g.loaded_perl_provider   = 0
-vim.g.loaded_ruby_provider   = 0
+-- Silence provider warnings (we use mason, not legacy providers)
+vim.g.loaded_perl_provider    = 0
+vim.g.loaded_ruby_provider    = 0
+vim.g.loaded_python3_provider = 0
+vim.g.loaded_node_provider    = 0
 
--- sessionoptions: required by auto-session for full restore
--- (localoptions preserves filetype + highlighting after restore)
+-- auto-session: localoptions preserves filetype+highlighting on restore
 vim.o.sessionoptions =
   "blank,buffers,curdir,folds,help,tabpages,winsize,winpos,terminal,localoptions"
 
@@ -31,12 +32,10 @@ require("config.autocmds")
 require("lazy").setup("config.plugins", {
   change_detection = { notify = false },
   rocks = {
-    enabled   = false,   -- disable luarocks (we don't use it, silences error)
+    enabled   = false,  -- silence luarocks/hererocks error
     hererocks = false,
   },
-  ui = {
-    border = "rounded",
-  },
+  ui = { border = "rounded" },
   performance = {
     rtp = {
       disabled_plugins = {

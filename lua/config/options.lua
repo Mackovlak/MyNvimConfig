@@ -13,12 +13,12 @@ opt.colorcolumn    = "100"
 opt.scrolloff      = 8
 opt.sidescrolloff  = 8
 opt.termguicolors  = true
-opt.showmode       = false        -- lualine shows mode already
+opt.showmode       = false
 opt.cmdheight      = 1
 opt.pumheight      = 12
 opt.splitright     = true
 opt.splitbelow     = true
-opt.laststatus     = 3            -- single global statusline
+opt.laststatus     = 3
 opt.winbar         = "%=%m %f"
 
 -- ── Indentation ───────────────────────────────────────────────────────────────
@@ -45,7 +45,7 @@ opt.undodir      = vim.fn.stdpath("data") .. "/undodir"
 
 -- ── Performance ───────────────────────────────────────────────────────────────
 opt.updatetime = 200
-opt.timeoutlen = 300
+opt.timeoutlen = 500   -- increased from 300 — gives more time before which-key
 opt.redrawtime = 1500
 
 -- ── Wrap & display ────────────────────────────────────────────────────────────
@@ -64,57 +64,47 @@ o.foldcolumn     = "1"
 o.fillchars      = "fold: ,foldopen:-,foldclose:+,foldsep: ,eob: "
 
 -- ── Clipboard ─────────────────────────────────────────────────────────────────
--- OSC52: yank → your LOCAL machine clipboard, zero tools needed over SSH.
+-- OSC52 COPY ONLY — this is the correct setup for a headless VPS over SSH.
 --
--- The paste side uses xclip/xdotool as fallback. If neither is installed
--- the paste handler falls back to the unnamed register — no hang, no timeout.
--- The ONLY cause of the 60s hang is when the paste handler uses the OSC52
--- *read* escape sequence and the terminal never responds.
+-- How it works:
+--   y / yy / Y   → yanks go into Neovim registers AND are sent via OSC52
+--                  to your LOCAL machine clipboard instantly.
+--   p / P        → pastes from Neovim's own yank register (register "0").
+--                  Fast, no network, no hang.
+--   Paste FROM local machine → use your terminal's paste shortcut
+--                  (Ctrl+Shift+V, Cmd+V, or middle-click).
+--                  This sends keystrokes directly to Neovim's insert mode.
 --
--- Rule: NEVER set vim.g.clipboard paste to osc52.paste() on a headless VPS.
+-- What NOT to do:
+--   Never use osc52.paste() on SSH — the terminal must respond to a query
+--   escape sequence. Most SSH setups never respond → Neovim hangs 60 seconds.
+--   The " keypress lag you saw was which-key reading register + via clipboard,
+--   which also triggered this same hang (fixed by disabling which-key registers).
 
+-- Set clipboard BEFORE defining vim.g.clipboard
 opt.clipboard = "unnamedplus"
 
 vim.g.clipboard = {
-  name = "osc52",
+  name = "osc52-copy-only",
   copy = {
     ["+"] = require("vim.ui.clipboard.osc52").copy("+"),
     ["*"] = require("vim.ui.clipboard.osc52").copy("*"),
   },
   paste = {
-    -- Fast: read from PRIMARY/xclip if available, else unnamed reg (no hang)
-    ["+"] = function()
-      if vim.fn.executable("xclip") == 1 then
-        local ok, result = pcall(vim.fn.systemlist, "xclip -o -selection clipboard 2>/dev/null")
-        if ok and result and #result > 0 then return { result, "c" } end
-      end
-      if vim.fn.executable("xdotool") == 1 then
-        local ok, result = pcall(vim.fn.systemlist, "xdotool getactivewindow getwindowgeometry 2>/dev/null")
-        if ok and result then return { result, "c" } end
-      end
-      -- Fallback: return last yank from unnamed register (instant, no network)
-      local lines = vim.split(vim.fn.getreg("0"), "\n")
-      return { lines, vim.fn.getregtype("0") }
-    end,
-    ["*"] = function()
-      if vim.fn.executable("xclip") == 1 then
-        local ok, result = pcall(vim.fn.systemlist, "xclip -o -selection primary 2>/dev/null")
-        if ok and result and #result > 0 then return { result, "c" } end
-      end
-      local lines = vim.split(vim.fn.getreg("0"), "\n")
-      return { lines, vim.fn.getregtype("0") }
-    end,
+    -- Return yank register "0" — last explicit yank, always instant
+    ["+"] = function() return { vim.split(vim.fn.getreg("0"), "\n"), vim.fn.getregtype("0") } end,
+    ["*"] = function() return { vim.split(vim.fn.getreg("0"), "\n"), vim.fn.getregtype("0") } end,
   },
 }
 
 -- ── Mouse ─────────────────────────────────────────────────────────────────────
 opt.mouse = "a"
 
--- ── Providers — silence unused provider warnings ─────────────────────────────
--- We use mason for python/node tools; we don't need the legacy providers.
+-- ── Silence unused provider warnings ─────────────────────────────────────────
 vim.g.loaded_perl_provider   = 0
 vim.g.loaded_ruby_provider   = 0
--- python3 and node providers are enabled (used by some plugins)
+vim.g.loaded_python3_provider = 0  -- we use mason for python tools, not this
+vim.g.loaded_node_provider   = 0   -- we use mason for node tools, not this
 
 -- ── Grep ──────────────────────────────────────────────────────────────────────
 if vim.fn.executable("rg") == 1 then

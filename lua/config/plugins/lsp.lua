@@ -62,6 +62,29 @@ return {
         automatic_enable       = false,
       })
 
+      -- Auto-install formatters + linters via mason
+      -- This fixes the conform "command not found" warnings
+      local ensure_tools = {
+        "prettierd",   -- JS/TS/CSS/HTML/JSON/MD/YAML formatter
+        "stylua",      -- Lua formatter
+        "black",       -- Python formatter
+        "isort",       -- Python import sorter
+        "shfmt",       -- Shell formatter
+        "eslint_d",    -- JS/TS linter (fast daemon)
+        "shellcheck",  -- Shell linter
+      }
+      local mr_ok, mr = pcall(require, "mason-registry")
+      if mr_ok then
+        mr.refresh(function()
+          for _, tool in ipairs(ensure_tools) do
+            local p_ok, p = pcall(mr.get_package, tool)
+            if p_ok and not p:is_installed() then
+              p:install()
+            end
+          end
+        end)
+      end
+
       -- ── Snippets ────────────────────────────────────────────────────────────
       local luasnip = require("luasnip")
       require("luasnip.loaders.from_vscode").lazy_load()
@@ -185,18 +208,23 @@ return {
           vim.keymap.set(mode, lhs, rhs, { buffer = bufnr, silent = true, desc = desc })
         end
 
-        map("n", "K",          vim.lsp.buf.hover,          "Hover docs")
-        map("n", "gd",         vim.lsp.buf.definition,      "Go to definition")
-        map("n", "gD",         vim.lsp.buf.declaration,     "Go to declaration")
-        map("n", "gi",         vim.lsp.buf.implementation,  "Go to implementation")
-        map("n", "gr",         vim.lsp.buf.references,      "References")
-        map("n", "gy",         vim.lsp.buf.type_definition, "Type definition")
-        map("n", "<leader>rn", vim.lsp.buf.rename,          "Rename symbol")
-        map("n", "<leader>ca", vim.lsp.buf.code_action,     "Code action")
-        map("v", "<leader>ca", vim.lsp.buf.code_action,     "Code action (range)")
+        -- Neovim 0.11 built-ins (don't redefine — causes which-key overlap warnings):
+        --   grr = references, gra = code_action, grn = rename
+        --   gri = implementation, grt = type_definition
+        -- We only set mappings that Neovim 0.11 does NOT define by default:
+        map("n", "K",          vim.lsp.buf.hover,       "Hover docs")
+        map("n", "gd",         vim.lsp.buf.definition,  "Go to definition")
+        map("n", "gD",         vim.lsp.buf.declaration, "Go to declaration")
+        -- Keep <leader> versions for discoverability via which-key
+        map("n", "<leader>cr", vim.lsp.buf.rename,      "Rename symbol")
+        map("n", "<leader>ca", vim.lsp.buf.code_action, "Code action")
+        map("v", "<leader>ca", vim.lsp.buf.code_action, "Code action (range)")
         map("n", "<leader>cf", function()
           vim.lsp.buf.format({ async = true })
-        end, "Format buffer (LSP)")
+        end, "Format (LSP)")
+        map("n", "<leader>ci", vim.lsp.buf.implementation,  "Go to implementation")
+        map("n", "<leader>cy", vim.lsp.buf.type_definition, "Type definition")
+        map("n", "<leader>cs", vim.lsp.buf.document_symbol, "Document symbols")
 
         -- Show signature help on insert
         if client.server_capabilities.signatureHelpProvider then

@@ -83,13 +83,21 @@ return {
           ["vim.lsp.util.stylize_markdown"] = true,
           ["cmp.entry.get_documentation"]   = true,
         },
+        -- Increase hover timeout to avoid flickering
+        hover    = { silent = true },
+        progress = { enabled = true, format = "lsp_progress", throttle = 1000 / 30 },
       },
       routes = {
-        -- Silence some noisy messages
+        -- Route most notifications to "mini" (bottom-right inline) instead of
+        -- nvim-notify popup — this avoids the vim.str_utfindex deprecation
+        -- which lives inside nvim-notify's buffer rendering code.
+        { filter = { event = "msg_show", kind = "" },          view = "mini" },
+        { filter = { event = "msg_show", kind = "search_count"}, view = "mini" },
         { filter = { event = "msg_show", any = {
             { find = "%d+L, %d+B" },
             { find = "; after #%d+" },
             { find = "; before #%d+" },
+            { find = "written" },
           }},
           view = "mini",
         },
@@ -99,6 +107,14 @@ return {
         command_palette      = true,
         long_message_to_split= true,
         inc_rename           = true,
+      },
+      -- Use notify only for important messages (errors/warnings)
+      -- This minimises vim.str_utfindex calls
+      views = {
+        mini = {
+          win_options = { winblend = 0 },
+          timeout     = 3000,
+        },
       },
     },
   },
@@ -110,7 +126,7 @@ return {
       timeout  = 3000,
       max_width= 60,
       stages   = "fade_in_slide_out",
-      render   = "compact",
+      render   = "minimal",  -- avoids vim.str_utfindex deprecation path
     },
   },
 
@@ -154,8 +170,22 @@ return {
     "folke/which-key.nvim",
     event = "VeryLazy",
     opts = {
-      plugins = { spelling = true },
-      win     = { border = "rounded" },   -- 'window' was renamed to 'win'
+      plugins = {
+        spelling   = { enabled = true, suggestions = 20 },
+        -- IMPORTANT: disable registers preview — it reads the + clipboard
+        -- register which triggers the OSC52 paste hang on every " keypress
+        registers  = false,
+        presets    = {
+          operators    = false,  -- disable — conflicts with surround/comment
+          motions      = false,
+          text_objects = false,
+          windows      = true,
+          nav          = true,
+          z            = true,
+          g            = true,
+        },
+      },
+      win = { border = "rounded" },
     },
     config = function(_, opts)
       local wk = require("which-key")
