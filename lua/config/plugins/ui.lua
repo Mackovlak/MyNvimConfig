@@ -68,29 +68,26 @@ return {
     },
   },
 
-  -- ── Notifications — snacks.nvim notifier (no vim.str_utfindex deprecation) ──
-  -- Replaces noice.nvim + nvim-notify which trigger vim.str_utfindex on Nvim 0.11
+  -- ── nvim-notify — replaces default vim.notify with popup notifications ────────
+  -- Using standalone (no noice) to avoid vim.str_utfindex issues in Nvim 0.11.
+  -- noice.nvim is intentionally excluded — it requires nvim-notify internals
+  -- that aren't updated for Nvim 0.11 yet.
   {
-    "folke/snacks.nvim",
-    priority = 1000,
-    lazy     = false,
+    "rcarriga/nvim-notify",
+    lazy = false,
+    priority = 900,
     opts = {
-      -- Minimal notifier — replaces nvim-notify popup
-      notifier = {
-        enabled = true,
-        timeout = 3000,
-        style   = "compact",
-      },
-      -- Better input/select UI
-      input = { enabled = true },
-      -- Improve vim.ui.select
-      picker = { enabled = false },  -- we use telescope for this
+      timeout    = 3000,
+      max_width  = 60,
+      render     = "minimal",   -- "minimal" avoids the str_utfindex code path
+      stages     = "static",    -- no animation = no per-frame utf processing
+      top_down   = false,
     },
     config = function(_, opts)
-      local snacks = require("snacks")
-      snacks.setup(opts)
-      -- Replace vim.notify globally
-      vim.notify = snacks.notify
+      local notify = require("notify")
+      notify.setup(opts)
+      -- Only override vim.notify after setup is complete
+      vim.notify = notify
     end,
   },
   -- ── Dashboard — startup screen ──────────────────────────────────────────────

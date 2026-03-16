@@ -89,7 +89,7 @@ return {
       end
 
       local group = vim.api.nvim_create_augroup("NvimLint", { clear = true })
-      vim.api.nvim_create_autocmd({ "BufWritePost", "InsertLeave" }, {
+      vim.api.nvim_create_autocmd({ "BufWritePost" }, {
         group    = group,
         callback = safe_lint,
       })

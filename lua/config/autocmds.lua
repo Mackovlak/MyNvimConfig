@@ -92,17 +92,15 @@ autocmd("BufWritePre", {
   end,
 })
 
--- ── Format on save (via conform, only if LSP is attached) ────────────────────
-autocmd("BufWritePre", {
-  group   = augroup("FormatOnSave", { clear = true }),
-  pattern = {
-    "*.js", "*.jsx", "*.ts", "*.tsx",
-    "*.json", "*.css", "*.html", "*.lua",
-  },
-  callback = function()
-    local ok, conform = pcall(require, "conform")
-    if ok then
-      conform.format({ async = false, lsp_fallback = true, timeout_ms = 800 })
-    end
-  end,
-})
+-- ── Format on save — disabled by default to avoid save lag ─────────────────
+-- To enable: uncomment the block below.
+-- Format manually with <leader>f instead.
+--
+-- autocmd("BufWritePre", {
+--   group   = augroup("FormatOnSave", { clear = true }),
+--   pattern = { "*.js", "*.jsx", "*.ts", "*.tsx", "*.json", "*.css", "*.html", "*.lua" },
+--   callback = function()
+--     local ok, conform = pcall(require, "conform")
+--     if ok then conform.format({ async = false, lsp_fallback = true, timeout_ms = 500 }) end
+--   end,
+-- })
