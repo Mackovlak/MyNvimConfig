@@ -32,12 +32,9 @@ return {
         opts = {
           notification = {
             window = {
-              -- Suppress "nvim-tree.lua integration implicitly enabled" warning
-              avoid_ftypes = { "NvimTree", "neo-tree" },
+              -- Correct key per fidget docs: avoid (not avoid_ftypes)
+              avoid = { "NvimTree" },
             },
-          },
-          integration = {
-            ["nvim-tree"] = { enable = false },  -- opt out of auto integration
           },
         },
       },

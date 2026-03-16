@@ -68,68 +68,31 @@ return {
     },
   },
 
-  -- ── Noice — beautiful command line + notifications ──────────────────────────
+  -- ── Notifications — snacks.nvim notifier (no vim.str_utfindex deprecation) ──
+  -- Replaces noice.nvim + nvim-notify which trigger vim.str_utfindex on Nvim 0.11
   {
-    "folke/noice.nvim",
-    event        = "VeryLazy",
-    dependencies = {
-      "MunifTanjim/nui.nvim",
-      "rcarriga/nvim-notify",
-    },
+    "folke/snacks.nvim",
+    priority = 1000,
+    lazy     = false,
     opts = {
-      lsp = {
-        override = {
-          ["vim.lsp.util.convert_input_to_markdown_lines"] = true,
-          ["vim.lsp.util.stylize_markdown"] = true,
-          ["cmp.entry.get_documentation"]   = true,
-        },
-        -- Increase hover timeout to avoid flickering
-        hover    = { silent = true },
-        progress = { enabled = true, format = "lsp_progress", throttle = 1000 / 30 },
+      -- Minimal notifier — replaces nvim-notify popup
+      notifier = {
+        enabled = true,
+        timeout = 3000,
+        style   = "compact",
       },
-      routes = {
-        -- Route most notifications to "mini" (bottom-right inline) instead of
-        -- nvim-notify popup — this avoids the vim.str_utfindex deprecation
-        -- which lives inside nvim-notify's buffer rendering code.
-        { filter = { event = "msg_show", kind = "" },          view = "mini" },
-        { filter = { event = "msg_show", kind = "search_count"}, view = "mini" },
-        { filter = { event = "msg_show", any = {
-            { find = "%d+L, %d+B" },
-            { find = "; after #%d+" },
-            { find = "; before #%d+" },
-            { find = "written" },
-          }},
-          view = "mini",
-        },
-      },
-      presets = {
-        bottom_search        = true,
-        command_palette      = true,
-        long_message_to_split= true,
-        inc_rename           = true,
-      },
-      -- Use notify only for important messages (errors/warnings)
-      -- This minimises vim.str_utfindex calls
-      views = {
-        mini = {
-          win_options = { winblend = 0 },
-          timeout     = 3000,
-        },
-      },
+      -- Better input/select UI
+      input = { enabled = true },
+      -- Improve vim.ui.select
+      picker = { enabled = false },  -- we use telescope for this
     },
+    config = function(_, opts)
+      local snacks = require("snacks")
+      snacks.setup(opts)
+      -- Replace vim.notify globally
+      vim.notify = snacks.notify
+    end,
   },
-
-  -- ── Notify ──────────────────────────────────────────────────────────────────
-  {
-    "rcarriga/nvim-notify",
-    opts = {
-      timeout  = 3000,
-      max_width= 60,
-      stages   = "fade_in_slide_out",
-      render   = "minimal",  -- avoids vim.str_utfindex deprecation path
-    },
-  },
-
   -- ── Dashboard — startup screen ──────────────────────────────────────────────
   {
     "nvimdev/dashboard-nvim",

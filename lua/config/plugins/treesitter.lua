@@ -1,27 +1,19 @@
 -- ============================================================
 --  treesitter.lua
 --
---  The persistent "configs not found" error happens because
---  lazy.nvim's internal loader calls require(main) at a point
---  where the plugin's lua/ directory isn't guaranteed to be
---  in the Lua package path yet — regardless of lazy=false,
---  main+opts, vim.schedule, or LazyDone autocmds.
+--  Keep this file. The previous error was caused by
+--  build = ":TSUpdate" running during fresh install and
+--  calling config() before the plugin was sourced.
 --
---  The only approach that is 100% reliable:
---    1. Don't use lazy=false — let lazy load it on BufReadPre
---    2. Use a plain config() function (no main field)
---    3. nvim-treesitter registers itself in package.preload
---       when its files are sourced — by BufReadPre that is done.
+--  This version has NO build step and loads on BufReadPre
+--  which guarantees the plugin is fully sourced first.
 --
---  This is how the vast majority of nvim-treesitter configs
---  in the wild work without issues.
+--  After first install run :TSInstall all manually once.
+--  To update parsers later: run :TSUpdate manually.
 -- ============================================================
 return {
   {
     "nvim-treesitter/nvim-treesitter",
-    build  = ":TSUpdate",
-    -- Load on first buffer read — by this point lazy has fully
-    -- sourced the plugin and package.preload is populated
     event  = { "BufReadPre", "BufNewFile" },
     config = function()
       require("nvim-treesitter.configs").setup({
